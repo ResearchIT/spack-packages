@@ -254,7 +254,6 @@ dotenv:
   stage: .pre
   variables:
     CI_OIDC_REQUIRED: 0
-    GIT_STRATEGY: "none"
     KUBERNETES_CPU_REQUEST: "100m"
     KUBERNETES_MEMORY_REQUEST: "5M"
   artifacts:
@@ -262,7 +261,6 @@ dotenv:
       dotenv: .env
   tags: [ "spack", "service" ]
   script:
-  - wget ${CI_PROJECT_URL}/-/raw/${CI_COMMIT_REF}/.env
   - cat .env
 
 ########################################
