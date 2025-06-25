@@ -15,22 +15,24 @@ class Openmolcas(CMakePackage):
     the electronic structure."""
 
     homepage = "https://gitlab.com/Molcas/OpenMolcas"
-    url = "https://github.com/Molcas/OpenMolcas/archive/v19.11.tar.gz"
+    url = "https://gitlab.com/Molcas/OpenMolcas/-/archive/v25.06/OpenMolcas-v25.06.tar.gz"
 
     license("LGPL-2.1-or-later")
 
+    version("25.06", sha256="df5262abd030d4fdfc66900140e608e53c71cf1d35acfdedcfaac147c02af94c")
     version("23.06", sha256="31727161c15ea588217c6511a3007792c74c35391849fa0296c2288d836cf951")
     version("21.02", sha256="d0b9731a011562ff4740c0e67e48d9af74bf2a266601a38b37640f72190519ca")
     version("19.11", sha256="8ebd1dcce98fc3f554f96e54e34f1e8ad566c601196ee68153763b6c0a04c7b9")
 
     variant("mpi", default=False, description="Build with mpi support.")
+    variant("openmp", default=False, description="Build with openmp thread support.")
 
     depends_on("c", type="build")  # generated
     depends_on("fortran", type="build")  # generated
 
     depends_on("hdf5")
     depends_on("lapack")
-    depends_on("openblas+ilp64")
+    depends_on("openblas+ilp64") #TODO expand this to supported blas implementations
     depends_on("python@3.7:", type=("build", "run"))
     depends_on("py-pyparsing", type=("build", "run"))
     depends_on("py-six", type=("build", "run"))
@@ -48,15 +50,15 @@ class Openmolcas(CMakePackage):
             env.append_path("PATH", self.prefix)
 
     def cmake_args(self):
-        args = ["-DLINALG=OpenBLAS", "-DOPENBLASROOT=%s" % self.spec["openblas"].prefix]
+        args = ["-DLINALG=OpenBLAS", "-DOPENBLASROOT=%s" % self.spec["openblas"].prefix, self.define_from_variant("OPENMP", "openmp")]
         if "+mpi" in self.spec:
+            ga_path = self.spec["globalarrays"].prefix
             mpi_args = [
                 "-DMPI=ON",
                 "-DGA=ON",
-                "-DGA_INCLUDE_PATH=%s" % self.spec["globalarrays"].prefix.include,
-                "-DLIBGA=%s" % os.path.join(self.spec["globalarrays"].prefix.lib, "libga.so"),
-                "-DLIBARMCI=%s"
-                % os.path.join(self.spec["globalarrays"].prefix.lib, "libarmci.so"),
+                f"-DGA_INCLUDE_PATH={ga_path.include}",
+                f"-DLIBGA={os.path.join(ga_path.lib, 'libga.so')}",
+                f"-DLIBARMCI={os.path.join(ga_path.lib, 'libarmci.so')}",
             ]
             args.extend(mpi_args)
         return args
