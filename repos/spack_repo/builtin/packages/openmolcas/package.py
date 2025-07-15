@@ -37,7 +37,7 @@ class Openmolcas(CMakePackage):
     depends_on("py-pyparsing", type=("build", "run"))
     depends_on("py-six", type=("build", "run"))
     depends_on("mpi", when="+mpi")
-    depends_on("globalarrays", when="+mpi")
+    depends_on("globalarrays+i8", when="+mpi")
 
     patch("CMakeLists.txt.patch", when="target=aarch64:")
 

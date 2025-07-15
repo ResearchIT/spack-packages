@@ -44,6 +44,7 @@ class Globalarrays(AutotoolsPackage):
         default="mpi-ts",
         description="ARMCI runtime",
     )
+    variant("i8", default=False, description="Build with 8 byte fortran integer support")
 
     depends_on("c", type="build")
     depends_on("cxx", type="build")
@@ -75,6 +76,7 @@ class Globalarrays(AutotoolsPackage):
             "--with-blas={0}".format(blas_flags),
             "--with-lapack={0}".format(lapack_libs),
         ]
+        args += self.enable_or_disable("i8")
 
         if self.spec.satisfies("+cxx"):
             args.append("--enable-cxx")
