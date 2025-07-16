@@ -40,7 +40,7 @@ class Globalarrays(AutotoolsPackage):
     variant("scalapack", default=False, description="Enable SCALAPACK")
     variant(
         "armci",
-        values=("mpi-ts", "mpi-pr", "mpi3", "openib", "ofi"),
+        values=("mpi-ts", "mpi-pr", "mpi3", "openib", "ofi", "ofa"),
         default="mpi-ts",
         description="ARMCI runtime",
     )
@@ -56,6 +56,7 @@ class Globalarrays(AutotoolsPackage):
 
     depends_on("libfabric", when="armci=ofi")
     depends_on("rdma-core", when="armci=openib")
+    depends_on("rdma-core", when="armci=ofa")
     depends_on("scalapack", when="+scalapack")
 
     # See release https://github.com/GlobalArrays/ga/releases/tag/v5.7.1
