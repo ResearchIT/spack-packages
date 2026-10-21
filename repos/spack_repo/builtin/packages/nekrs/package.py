@@ -62,7 +62,8 @@ class Nekrs(Package, CMakePackage, CudaPackage, ROCmPackage):
     depends_on("mpi")
     depends_on("git")
     depends_on("cmake")
-    # some deprecated apis this uses were removed in cuda@13:
+    # bundled OCCA passes a CUdevice to cuMemAdvise/cuMemPrefetchAsync, which take a
+    # CUmemLocation since cuda@13 (fixed in nekRS 26.0)
     depends_on("cuda@:12", when="@:23+cuda")
 
     def patch(self):
