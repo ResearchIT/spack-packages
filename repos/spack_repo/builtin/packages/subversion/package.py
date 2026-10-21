@@ -151,7 +151,7 @@ class Subversion(AutotoolsPackage):
         return match.group(1) if match else None
 
     def flag_handler(self, name, flags):
-        # added '//' comments which is invalid in c90
-        if self.spec.satisfies("%expat@2.8.5:") and name.lower() == "cflags":
+        # expat 2.9.0 added '//' comments to expat.h; subversion's configure forces -std=c90
+        if name == "cflags" and self.spec.satisfies("%expat@2.9:"):
             flags.append("-std=c99")
-        return (None, None, flags)
+        return (flags, None, None)
