@@ -53,8 +53,9 @@ class CeresSolver(CMakePackage):
                 ]
             )
 
-        # some incomplete autodetection happens with cuda installed
-        if self.spec.satisfies("@2.2.0:"):
+        # ceres 2.2 enables CUDA by default if it finds a toolkit on the host, and
+        # this recipe has no cuda dependency. Newer ceres renamed this to WITH_CUDA.
+        if self.spec.satisfies("@2.2"):
             args.append(self.define("USE_CUDA", False))
 
         if self.spec.satisfies("+suitesparse"):
