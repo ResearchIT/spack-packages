@@ -78,7 +78,8 @@ class Gromacs(CMakePackage, CudaPackage):
 
     # inferred from the install guide and experimentation
     depends_on("cuda@7:12", when="@2019.6 +cuda")
-    depends_on("cuda@11:12", when="@2024:2025.2 +cuda")
+    depends_on("cuda@11:12", when="@2024 +cuda")
+    depends_on("cuda@12.1:12", when="@2025.0:2025.2 +cuda")
     depends_on("cuda@12.1:", when="@2025.3: +cuda")
 
     variant(
