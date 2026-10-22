@@ -33,6 +33,7 @@ class Ldak(Package):
     depends_on("intel-oneapi-mkl threads=openmp", when="^[virtuals=blas] intel-oneapi-mkl")
     depends_on("glpk", when="+glpk")
     depends_on("zstd", when="@7.01:")
+    depends_on("suite-sparse", when="@7.01:")
 
     requires("target=x86_64:", when="~glpk", msg="bundled qsopt is only for x86_64")
     requires(
@@ -60,18 +61,24 @@ class Ldak(Package):
         if self.spec.satisfies("@7.01:"):
             source_path = join_path(source_path, "Source_Code")
 
-        with working_dir(source_path):
-            if self.spec.satisfies("~glpk"):
-                if self.spec.satisfies("platform=darwin"):
-                    libs.append("libqsopt.mac.a")
-                else:
-                    # bundled qsopt is not position independent
-                    libs.append(["libqsopt.linux.a", "-no-pie"])
-                defines.append("-DMET=0")
+        if self.spec.satisfies("~glpk"):
+            if self.spec.satisfies("platform=darwin"):
+                libs.append("libqsopt.mac.a")
             else:
-                includes.append(self.spec["glpk"].headers.include_flags)
-                libs.append(self.spec["glpk"].libs.link_flags)
-                defines.append("-DMET=1")
+                # bundled qsopt is not position independent
+                libs.append(["libqsopt.linux.a", "-no-pie"])
+            defines.append("-DMET=0")
+        else:
+            includes.append(self.spec["glpk"].headers.include_flags)
+            libs.append(self.spec["glpk"].libs.link_flags)
+            defines.append("-DMET=1")
+
+        if self.spec.satisfies("@7.01:"):
+            defines.append("-DVQTL=1")
+            includes.append(self.spec["suite-sparse"].headers.include_flags)
+            libs.extend(self.spec["suite-sparse"].libs.link_flags.split())
+
+        with working_dir(source_path):
             if self.spec.satisfies("^mkl"):
                 if self.spec.satisfies("@5.2"):
                     filter_file("#define MKL.*", "#define MKL 1", "ldak.c")
