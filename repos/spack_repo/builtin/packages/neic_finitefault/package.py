@@ -25,7 +25,7 @@ class NeicFinitefault(PythonPackage):
 
     license("CC0-1.0", checked_by="snehring")
 
-    version("20240410", commit="ef6a1a92d60549100885112e24a18e38d8d4ce0b", get_full_repo=True)
+    version("20240410", commit="ef6a1a92d60549100885112e24a18e38d8d4ce0b")
     version("0.1.0", sha256="36b400dfc418bf78a3099f6fc308681c87ae320e6d71c7d0e98a2738e72fb570")
 
     depends_on("c", type="build")  # generated
@@ -33,7 +33,8 @@ class NeicFinitefault(PythonPackage):
 
     resource(
         name="fd_bank",
-        placement="fd_bank",
+        destination=join_path("fortran_code", "gfs_nm", "long"),
+        placement={"fd_bank": "fd_bank"},
         url="https://zenodo.org/records/7236739/files/fd_bank",
         sha256="fe0f1a392cb9b6623c981de2a4fae405d9820b14e274e287e64731aede8ecb40",
         expand=False,
@@ -41,7 +42,8 @@ class NeicFinitefault(PythonPackage):
     )
     resource(
         name="LITHO1.0.nc",
-        placement="LITHO1.0.nc",
+        destination=join_path("fortran_code", "info"),
+        placement={"LITHO1.0.nc": "LITHO1.0.nc"},
         url="https://ds.iris.edu/files/products/emc/emc-files/LITHO1.0.nc",
         sha256="4429bdf3fc2a5402064b40b059faf3a79d9ce0818feb1b13122e169af56f4b43",
         expand=False,
@@ -88,29 +90,6 @@ class NeicFinitefault(PythonPackage):
 
     @run_before("install")
     def build(self):
-        # place resources, couldn't figure out another way to do this
-        # that didn't result in symlinks
-        relevant_resources = [
-            resource
-            for resource_spec, resource_list in self.resources.items()
-            if self.spec.intersects(resource_spec)
-            for resource in resource_list
-            if resource.name != "tectonicplates"
-        ]
-        for resource in relevant_resources:
-            res_path = self.stage.source_path
-            if resource.name == "fd_bank":
-                res_path = join_path(res_path, "fd_bank")
-                res_dst = join_path(self.build_directory, "fortran_code", "gfs_nm", "long")
-            elif resource.name == "LITHO1.0.nc":
-                res_path = join_path(res_path, "LITHO1.0.nc")
-                res_dst = join_path(self.build_directory, "fortran_code", "info")
-
-            res_dst = join_path(res_dst, resource.name)
-
-            copy(join_path(res_path, resource.name), res_dst)
-            shutil.rmtree(res_path)
-
         # everything about this seems to assume it's going to reside where it's compiled
         mkdirp(self.prefix)
         install_tree(".", self.prefix)
