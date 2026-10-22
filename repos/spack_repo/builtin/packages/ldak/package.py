@@ -18,8 +18,8 @@ class Ldak(Package):
 
     license("GPL-3.0-only")
 
-    version("5.2", sha256="ba3de4eb4f2d664b3c2a54bef2eb66d1a498ac423179e97a5795d010161b1805")
     version("7.01", commit="6572adccc93e85a66bb7648e46af21a5638467bf")
+    version("5.2", sha256="ba3de4eb4f2d664b3c2a54bef2eb66d1a498ac423179e97a5795d010161b1805")
 
     variant("glpk", default=False, description="Use glpk instead of vendored qsopt")
     variant("glpk", default=True, description="Use glpk instead of vendored qsopt", when="@7.01:")
@@ -65,7 +65,9 @@ class Ldak(Package):
                 if self.spec.satisfies("platform=darwin"):
                     libs.append("libqsopt.mac.a")
                 else:
-                    libs.append("libqsopt.linux.a")
+                    # bundled qsopt is not position independent
+                    libs.append(["libqsopt.linux.a", "-no-pie"])
+                defines.append("-DMET=0")
             else:
                 includes.append(self.spec["glpk"].headers.include_flags)
                 libs.append(self.spec["glpk"].libs.link_flags)
@@ -92,7 +94,8 @@ class Ldak(Package):
                 libs.append(self.spec["zstd"].libs.link_flags)
                 includes.append(self.spec["zstd"].headers.include_flags)
             cc = Executable(spack_cc)
-            args = ["ldak.c", self.compiler.openmp_flag, "-o", "ldak"] + defines + includes + libs
+            args = ["ldak.c", "-std=gnu17", self.compiler.openmp_flag, "-O3", "-o", "ldak"]
+            args += defines + includes + libs
             cc(*args)
 
     def install(self, spec, prefix):
